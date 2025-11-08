@@ -13,10 +13,13 @@ import { useToast } from "@/hooks/use-toast";
 
 const loanSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
+  age: z.number().min(18, "You must be at least 18 years old").max(100, "Please enter a valid age"),
+  gender: z.string().min(1, "Please select gender"),
   income: z.number().min(0, "Income must be positive"),
   creditScore: z.number().min(300, "Credit score must be at least 300").max(850, "Credit score cannot exceed 850"),
   loanAmount: z.number().min(1000, "Loan amount must be at least $1,000"),
   loanTerm: z.number().min(1, "Loan term must be at least 1 month").max(360, "Loan term cannot exceed 360 months"),
+  loanPurpose: z.string().min(1, "Please select loan purpose"),
   employmentStatus: z.string().min(1, "Please select employment status"),
   existingLoans: z.number().min(0, "Existing loans cannot be negative"),
   savingsBalance: z.number().min(0, "Savings balance cannot be negative"),
@@ -42,26 +45,36 @@ const LoanApplication = () => {
     setIsSubmitting(true);
     
     try {
-      // TODO: This will call the Hugging Face API via edge function
-      // For now, simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Mock response - will be replaced with actual API
-      const mockResult = {
-        prediction: Math.random() > 0.5 ? "Approved" : "Rejected",
-        confidence: Math.random() * 30 + 70, // 70-100%
-        fairnessScore: Math.random() * 20 + 80, // 80-100%
-        explanation: "Based on strong credit history and stable income",
-        dataUsed: data,
-      };
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/analyze-loan`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to process application');
+      }
+
+      const result = await response.json();
 
       // Navigate to results page with data
-      navigate('/result', { state: mockResult });
+      navigate('/result', { 
+        state: {
+          ...result,
+          dataUsed: data,
+        }
+      });
       
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to process your application. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to process your application. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -102,6 +115,40 @@ const LoanApplication = () => {
               {errors.name && (
                 <p className="text-sm text-destructive">{errors.name.message}</p>
               )}
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="age">Age</Label>
+                <Input
+                  id="age"
+                  type="number"
+                  {...register("age", { valueAsNumber: true })}
+                  placeholder="30"
+                  className={errors.age ? "border-destructive" : ""}
+                />
+                {errors.age && (
+                  <p className="text-sm text-destructive">{errors.age.message}</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="gender">Gender</Label>
+                <Select onValueChange={(value) => setValue("gender", value)}>
+                  <SelectTrigger className={errors.gender ? "border-destructive" : ""}>
+                    <SelectValue placeholder="Select gender" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="male">Male</SelectItem>
+                    <SelectItem value="female">Female</SelectItem>
+                    <SelectItem value="non-binary">Non-binary</SelectItem>
+                    <SelectItem value="prefer-not-to-say">Prefer not to say</SelectItem>
+                  </SelectContent>
+                </Select>
+                {errors.gender && (
+                  <p className="text-sm text-destructive">{errors.gender.message}</p>
+                )}
+              </div>
             </div>
 
             <div className="grid md:grid-cols-2 gap-4">
@@ -164,23 +211,47 @@ const LoanApplication = () => {
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="employmentStatus">Employment Status</Label>
-              <Select onValueChange={(value) => setValue("employmentStatus", value)}>
-                <SelectTrigger className={errors.employmentStatus ? "border-destructive" : ""}>
-                  <SelectValue placeholder="Select employment status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="full-time">Full-time</SelectItem>
-                  <SelectItem value="part-time">Part-time</SelectItem>
-                  <SelectItem value="self-employed">Self-employed</SelectItem>
-                  <SelectItem value="unemployed">Unemployed</SelectItem>
-                  <SelectItem value="retired">Retired</SelectItem>
-                </SelectContent>
-              </Select>
-              {errors.employmentStatus && (
-                <p className="text-sm text-destructive">{errors.employmentStatus.message}</p>
-              )}
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="employmentStatus">Employment Status</Label>
+                <Select onValueChange={(value) => setValue("employmentStatus", value)}>
+                  <SelectTrigger className={errors.employmentStatus ? "border-destructive" : ""}>
+                    <SelectValue placeholder="Select employment status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="full-time">Full-time</SelectItem>
+                    <SelectItem value="part-time">Part-time</SelectItem>
+                    <SelectItem value="self-employed">Self-employed</SelectItem>
+                    <SelectItem value="unemployed">Unemployed</SelectItem>
+                    <SelectItem value="retired">Retired</SelectItem>
+                  </SelectContent>
+                </Select>
+                {errors.employmentStatus && (
+                  <p className="text-sm text-destructive">{errors.employmentStatus.message}</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="loanPurpose">Loan Purpose</Label>
+                <Select onValueChange={(value) => setValue("loanPurpose", value)}>
+                  <SelectTrigger className={errors.loanPurpose ? "border-destructive" : ""}>
+                    <SelectValue placeholder="Select loan purpose" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="home-purchase">Home Purchase</SelectItem>
+                    <SelectItem value="home-improvement">Home Improvement</SelectItem>
+                    <SelectItem value="debt-consolidation">Debt Consolidation</SelectItem>
+                    <SelectItem value="business">Business</SelectItem>
+                    <SelectItem value="education">Education</SelectItem>
+                    <SelectItem value="medical">Medical</SelectItem>
+                    <SelectItem value="vehicle">Vehicle</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+                {errors.loanPurpose && (
+                  <p className="text-sm text-destructive">{errors.loanPurpose.message}</p>
+                )}
+              </div>
             </div>
 
             <div className="grid md:grid-cols-2 gap-4">

@@ -57,6 +57,7 @@ export type Database = {
       }
       loan_applications: {
         Row: {
+          age: number | null
           confidence: number | null
           created_at: string
           credit_score: number
@@ -64,9 +65,11 @@ export type Database = {
           existing_loans: number
           explanation: string | null
           fairness_score: number | null
+          gender: string | null
           id: string
           income: number
           loan_amount: number
+          loan_purpose: string | null
           loan_term: number
           name: string
           prediction: string | null
@@ -74,6 +77,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          age?: number | null
           confidence?: number | null
           created_at?: string
           credit_score: number
@@ -81,9 +85,11 @@ export type Database = {
           existing_loans?: number
           explanation?: string | null
           fairness_score?: number | null
+          gender?: string | null
           id?: string
           income: number
           loan_amount: number
+          loan_purpose?: string | null
           loan_term: number
           name: string
           prediction?: string | null
@@ -91,6 +97,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          age?: number | null
           confidence?: number | null
           created_at?: string
           credit_score?: number
@@ -98,9 +105,11 @@ export type Database = {
           existing_loans?: number
           explanation?: string | null
           fairness_score?: number | null
+          gender?: string | null
           id?: string
           income?: number
           loan_amount?: number
+          loan_purpose?: string | null
           loan_term?: number
           name?: string
           prediction?: string | null
