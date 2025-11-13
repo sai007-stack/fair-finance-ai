@@ -164,14 +164,14 @@ const ReviewTasks = () => {
 
                       <div>
                         <p className="text-sm font-medium text-muted-foreground mb-1">AI Explanation</p>
-                        <p className="text-sm text-foreground bg-secondary/20 p-3 rounded-md">
+                        <p className="text-sm text-foreground bg-secondary/20 p-3 rounded-md break-words whitespace-pre-wrap">
                           {appeal.loan_applications.explanation}
                         </p>
                       </div>
 
                       <div>
                         <p className="text-sm font-medium text-muted-foreground mb-1">Reason Codes</p>
-                        <pre className="text-xs bg-secondary/20 p-3 rounded-md overflow-auto">
+                        <pre className="text-xs bg-secondary/20 p-3 rounded-md overflow-auto whitespace-pre-wrap break-words">
                           {JSON.stringify(appeal.reason_codes, null, 2)}
                         </pre>
                       </div>
