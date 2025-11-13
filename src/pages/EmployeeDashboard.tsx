@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Shield, ArrowLeft, TrendingUp, AlertTriangle, Users, BarChart3 } from "lucide-react";
+import { Shield, ArrowLeft, TrendingUp, AlertTriangle, Users, BarChart3, ClipboardList } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
 const EmployeeDashboard = () => {
@@ -39,10 +39,18 @@ const EmployeeDashboard = () => {
 
       <main className="container mx-auto px-4 py-12">
         <div className="max-w-6xl mx-auto">
-          <h1 className="text-4xl font-bold mb-2 text-foreground">Employee Dashboard</h1>
-          <p className="text-lg text-muted-foreground mb-8">
-            Monitor fairness analytics and ensure ethical AI decisions
-          </p>
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h1 className="text-4xl font-bold mb-2 text-foreground">Employee Dashboard</h1>
+              <p className="text-lg text-muted-foreground">
+                Monitor fairness analytics and ensure ethical AI decisions
+              </p>
+            </div>
+            <Button onClick={() => navigate('/review-tasks')} size="lg">
+              <ClipboardList className="mr-2 h-5 w-5" />
+              Review Tasks
+            </Button>
+          </div>
 
           {/* Key Metrics */}
           <div className="grid md:grid-cols-3 gap-6 mb-8">

@@ -68,6 +68,7 @@ const LoanApplication = () => {
         state: {
           ...result,
           dataUsed: data,
+          loanId: result.applicationId,
         }
       });
       

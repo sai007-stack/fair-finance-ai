@@ -2,3 +2,12 @@ project_id = "ppluciifhbouvxhbxzlj"
 
 [functions.analyze-loan]
 verify_jwt = false
+
+[functions.handle-appeal]
+verify_jwt = false
+
+[functions.review-appeal]
+verify_jwt = false
+
+[functions.monthly-notifications]
+verify_jwt = false

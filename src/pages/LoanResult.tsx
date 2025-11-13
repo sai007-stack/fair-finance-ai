@@ -1,19 +1,26 @@
 import { useLocation, useNavigate } from "react-router-dom";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Shield, ArrowLeft, CheckCircle2, XCircle, Info, RefreshCw } from "lucide-react";
+import { Shield, ArrowLeft, CheckCircle2, XCircle, Info, RefreshCw, FileText } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const LoanResult = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const [isSubmittingAppeal, setIsSubmittingAppeal] = useState(false);
+  
   const result = location.state as {
     prediction: string;
     confidence: number;
     fairnessScore: number;
     explanation: string;
     dataUsed: any;
+    loanId?: string;
   } | null;
 
   if (!result) {
@@ -22,6 +29,42 @@ const LoanResult = () => {
   }
 
   const isApproved = result.prediction === "Approved";
+
+  const handleAppeal = async () => {
+    setIsSubmittingAppeal(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('handle-appeal', {
+        body: {
+          loanId: result.loanId,
+          userId: result.dataUsed.name,
+          reasonCodes: {
+            prediction: result.prediction,
+            confidence: result.confidence,
+            fairnessScore: result.fairnessScore,
+            explanation: result.explanation
+          }
+        }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Appeal Submitted",
+        description: data.message,
+      });
+
+      // Navigate to customer dashboard
+      navigate('/customer-dashboard', { state: { customerName: result.dataUsed.name } });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmittingAppeal(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/30">
@@ -100,12 +143,21 @@ const LoanResult = () => {
                 </>
               ) : (
                 <>
-                  <Button className="flex-1" size="lg">
-                    <RefreshCw className="mr-2 h-4 w-4" />
-                    Request Fairness Recheck
+                  <Button 
+                    className="flex-1" 
+                    size="lg" 
+                    onClick={handleAppeal}
+                    disabled={isSubmittingAppeal}
+                  >
+                    <FileText className="mr-2 h-5 w-5" />
+                    {isSubmittingAppeal ? 'Submitting...' : 'Appeal Decision'}
                   </Button>
-                  <Button variant="secondary" className="flex-1" size="lg" onClick={() => navigate('/apply')}>
-                    Try Another Application
+                  <Button className="flex-1" size="lg" onClick={() => navigate('/apply')} variant="outline">
+                    <RefreshCw className="mr-2 h-5 w-5" />
+                    Apply Again
+                  </Button>
+                  <Button variant="secondary" className="flex-1" size="lg" onClick={() => navigate('/')}>
+                    Return Home
                   </Button>
                 </>
               )}
