@@ -28,7 +28,7 @@ const LoanResult = () => {
     return null;
   }
 
-  const isApproved = result.prediction === "Approved";
+  const isApproved = result.prediction.toUpperCase() === "APPROVED";
 
   const handleAppeal = async () => {
     setIsSubmittingAppeal(true);

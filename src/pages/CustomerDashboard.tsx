@@ -24,7 +24,7 @@ const CustomerDashboard = () => {
 
   const fetchAppeals = async () => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('appeals')
         .select(`
           *,
@@ -48,7 +48,7 @@ const CustomerDashboard = () => {
 
   const fetchNotifications = async () => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('notifications')
         .select('*')
         .eq('user_id', customerName)
@@ -63,7 +63,7 @@ const CustomerDashboard = () => {
 
   const markAsRead = async (notificationId: string) => {
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('notifications')
         .update({ read: true })
         .eq('id', notificationId);
