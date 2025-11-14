@@ -11,7 +11,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
       const { data: { session } } = await supabase.auth.getSession();
       setIsAuthenticated(!!session);
       
-      // Redirect to appropriate dashboard based on role
+      // Redirect employees to dashboard if on home page
       if (session && window.location.pathname === "/") {
         const { data: roleData } = await supabase
           .from("user_roles")
@@ -21,8 +21,6 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
         
         if (roleData?.role === "employee") {
           navigate("/dashboard");
-        } else {
-          navigate("/customer-dashboard");
         }
       }
     };
