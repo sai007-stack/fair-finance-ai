@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -32,7 +33,7 @@ const Auth = () => {
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
 
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
@@ -43,12 +44,28 @@ const Auth = () => {
         description: "Invalid email or password",
         variant: "destructive",
       });
-    } else {
+      setIsLoading(false);
+      return;
+    }
+
+    // Get user role and redirect accordingly
+    if (data.user) {
+      const { data: roleData } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", data.user.id)
+        .single();
+
       toast({
         title: "Login Successful",
         description: "Redirecting to dashboard...",
       });
-      navigate("/");
+
+      if (roleData?.role === "employee") {
+        navigate("/dashboard");
+      } else {
+        navigate("/customer-dashboard");
+      }
     }
 
     setIsLoading(false);
@@ -62,22 +79,47 @@ const Auth = () => {
     const name = formData.get("name") as string;
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
+    const role = formData.get("role") as string;
+
+    // Check if email already exists
+    const { data: existingUser } = await supabase.auth.signInWithPassword({
+      email,
+      password: "dummy", // This will fail but let us check if user exists
+    });
+
+    if (existingUser) {
+      toast({
+        title: "Registration Failed",
+        description: "An account with this email already exists.",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+      return;
+    }
 
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        data: { name },
+        data: { name, role },
         emailRedirectTo: `${window.location.origin}/`,
       },
     });
 
     if (error) {
-      toast({
-        title: "Registration Failed",
-        description: error.message,
-        variant: "destructive",
-      });
+      if (error.message.includes("already registered")) {
+        toast({
+          title: "Registration Failed",
+          description: "An account with this email already exists.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Registration Failed",
+          description: error.message,
+          variant: "destructive",
+        });
+      }
     } else {
       toast({
         title: "Registration Successful",
@@ -165,6 +207,18 @@ const Auth = () => {
                     minLength={6}
                     required
                   />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="register-role">Account Type</Label>
+                  <Select name="role" required defaultValue="user">
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select account type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="user">User</SelectItem>
+                      <SelectItem value="employee">Employee</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <Button type="submit" className="w-full" disabled={isLoading}>
                   {isLoading ? "Creating Account..." : "Create Account"}
