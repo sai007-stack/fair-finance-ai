@@ -329,7 +329,7 @@ const LoanApplication = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="annualIncome">Annual Income ($)</Label>
+                    <Label htmlFor="annualIncome">Annual Income (₹)</Label>
                     <Input
                       id="annualIncome"
                       type="number"
@@ -344,7 +344,7 @@ const LoanApplication = () => {
 
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="loanAmount">Loan Amount ($)</Label>
+                      <Label htmlFor="loanAmount">Loan Amount (₹)</Label>
                       <Input
                         id="loanAmount"
                         type="number"
@@ -392,7 +392,7 @@ const LoanApplication = () => {
                   
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="propertyValue">Property Value ($)</Label>
+                      <Label htmlFor="propertyValue">Property Value (₹)</Label>
                       <Input
                         id="propertyValue"
                         type="number"
@@ -406,7 +406,7 @@ const LoanApplication = () => {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="downPayment">Down Payment ($)</Label>
+                      <Label htmlFor="downPayment">Down Payment (₹)</Label>
                       <Input
                         id="downPayment"
                         type="number"
@@ -421,7 +421,7 @@ const LoanApplication = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="monthlyExpenses">Monthly Expenses ($)</Label>
+                    <Label htmlFor="monthlyExpenses">Monthly Expenses (₹)</Label>
                     <Input
                       id="monthlyExpenses"
                       type="number"
@@ -490,7 +490,7 @@ const LoanApplication = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="annualIncome">Annual Income ($)</Label>
+                    <Label htmlFor="annualIncome">Annual Income (₹)</Label>
                     <Input
                       id="annualIncome"
                       type="number"
@@ -505,7 +505,7 @@ const LoanApplication = () => {
 
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="loanAmount">Loan Amount ($)</Label>
+                      <Label htmlFor="loanAmount">Loan Amount (₹)</Label>
                       <Input
                         id="loanAmount"
                         type="number"
@@ -553,7 +553,7 @@ const LoanApplication = () => {
                   
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="monthlyExpenses">Monthly Expenses ($)</Label>
+                      <Label htmlFor="monthlyExpenses">Monthly Expenses (₹)</Label>
                       <Input
                         id="monthlyExpenses"
                         type="number"
@@ -567,7 +567,7 @@ const LoanApplication = () => {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="existingEmis">Existing EMIs ($)</Label>
+                      <Label htmlFor="existingEmis">Existing EMIs (₹)</Label>
                       <Input
                         id="existingEmis"
                         type="number"
@@ -637,7 +637,7 @@ const LoanApplication = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="annualIncome">Annual Income ($)</Label>
+                    <Label htmlFor="annualIncome">Annual Income (₹)</Label>
                     <Input
                       id="annualIncome"
                       type="number"
@@ -652,7 +652,7 @@ const LoanApplication = () => {
 
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="loanAmount">Loan Amount ($)</Label>
+                      <Label htmlFor="loanAmount">Loan Amount (₹)</Label>
                       <Input
                         id="loanAmount"
                         type="number"
@@ -700,7 +700,7 @@ const LoanApplication = () => {
                   
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="businessRevenue">Business Revenue ($)</Label>
+                      <Label htmlFor="businessRevenue">Business Revenue (₹)</Label>
                       <Input
                         id="businessRevenue"
                         type="number"
@@ -714,7 +714,7 @@ const LoanApplication = () => {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="businessProfit">Business Profit ($)</Label>
+                      <Label htmlFor="businessProfit">Business Profit (₹)</Label>
                       <Input
                         id="businessProfit"
                         type="number"
@@ -729,7 +729,7 @@ const LoanApplication = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="commercialPropertyValue">Commercial Property Value ($)</Label>
+                    <Label htmlFor="commercialPropertyValue">Commercial Property Value (₹)</Label>
                     <Input
                       id="commercialPropertyValue"
                       type="number"
@@ -798,7 +798,7 @@ const LoanApplication = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="annualIncome">Annual Income ($)</Label>
+                    <Label htmlFor="annualIncome">Annual Income (₹)</Label>
                     <Input
                       id="annualIncome"
                       type="number"
@@ -831,7 +831,7 @@ const LoanApplication = () => {
                   
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="tuitionFee">Tuition Fee ($)</Label>
+                      <Label htmlFor="tuitionFee">Tuition Fee (₹)</Label>
                       <Input
                         id="tuitionFee"
                         type="number"
@@ -860,7 +860,7 @@ const LoanApplication = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="studentExpenses">Student Expenses ($)</Label>
+                    <Label htmlFor="studentExpenses">Student Expenses (₹)</Label>
                     <Input
                       id="studentExpenses"
                       type="number"

@@ -192,7 +192,7 @@ const LoanResult = () => {
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div>
                 <span className="font-medium text-foreground">Income:</span>
-                <span className="text-muted-foreground ml-2">${result.dataUsed.income?.toLocaleString()}</span>
+                <span className="text-muted-foreground ml-2">₹{result.dataUsed.income?.toLocaleString('en-IN')}</span>
               </div>
               <div>
                 <span className="font-medium text-foreground">Credit Score:</span>
@@ -200,7 +200,7 @@ const LoanResult = () => {
               </div>
               <div>
                 <span className="font-medium text-foreground">Loan Amount:</span>
-                <span className="text-muted-foreground ml-2">${result.dataUsed.loanAmount?.toLocaleString()}</span>
+                <span className="text-muted-foreground ml-2">₹{result.dataUsed.loanAmount?.toLocaleString('en-IN')}</span>
               </div>
               <div>
                 <span className="font-medium text-foreground">Loan Term:</span>
@@ -212,11 +212,11 @@ const LoanResult = () => {
               </div>
               <div>
                 <span className="font-medium text-foreground">Existing Loans:</span>
-                <span className="text-muted-foreground ml-2">${result.dataUsed.existingLoans?.toLocaleString()}</span>
+                <span className="text-muted-foreground ml-2">₹{result.dataUsed.existingLoans?.toLocaleString('en-IN')}</span>
               </div>
               <div>
                 <span className="font-medium text-foreground">Savings:</span>
-                <span className="text-muted-foreground ml-2">${result.dataUsed.savingsBalance?.toLocaleString()}</span>
+                <span className="text-muted-foreground ml-2">₹{result.dataUsed.savingsBalance?.toLocaleString('en-IN')}</span>
               </div>
             </div>
             <p className="text-xs text-muted-foreground mt-4 italic">
