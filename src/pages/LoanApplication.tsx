@@ -23,6 +23,10 @@ const loanSchema = z.object({
   monthlyExpenses: z.number().optional(),
   // Personal Loan fields
   existingEmis: z.number().optional(),
+  // Business Loan fields
+  businessRevenue: z.number().optional(),
+  businessProfit: z.number().optional(),
+  commercialPropertyValue: z.number().optional(),
   // Other loan type fields (kept for future use)
   name: z.string().optional(),
   age: z.number().optional(),
@@ -50,6 +54,17 @@ const loanSchema = z.object({
       data.cibilScore !== undefined &&
       data.monthlyExpenses !== undefined &&
       data.existingEmis !== undefined
+    );
+  }
+  if (data.loanType === "business-loan") {
+    return (
+      data.annualIncome !== undefined &&
+      data.loanAmount !== undefined &&
+      data.loanTerm !== undefined &&
+      data.cibilScore !== undefined &&
+      data.businessRevenue !== undefined &&
+      data.businessProfit !== undefined &&
+      data.commercialPropertyValue !== undefined
     );
   }
   return true;
@@ -116,6 +131,23 @@ const LoanApplication = () => {
           age: 30,
           gender: "prefer-not-to-say",
           employmentStatus: "full-time",
+          existingLoans: 0,
+        };
+      } else if (data.loanType === "business-loan") {
+        mappedData = {
+          name: "Business Loan Applicant",
+          income: (data.annualIncome || 0) + (data.businessRevenue || 0) + (data.businessProfit || 0),
+          loanAmount: data.loanAmount,
+          loanTerm: data.loanTerm,
+          creditScore: data.cibilScore,
+          residentialAssetsValue: 0,
+          commercialAssetsValue: data.commercialPropertyValue,
+          luxuryAssetsValue: 0,
+          savingsBalance: data.businessProfit,
+          loanType: data.loanType,
+          age: 30,
+          gender: "prefer-not-to-say",
+          employmentStatus: "self-employed",
           existingLoans: 0,
         };
       } else {
@@ -410,6 +442,120 @@ const LoanApplication = () => {
                         <p className="text-sm text-destructive">{errors.existingEmis.message}</p>
                       )}
                     </div>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {selectedLoanType === "business-loan" && (
+              <>
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-foreground">Basic Information</h3>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="annualIncome">Annual Income ($)</Label>
+                    <Input
+                      id="annualIncome"
+                      type="number"
+                      {...register("annualIncome", { valueAsNumber: true })}
+                      placeholder="80000"
+                      className={errors.annualIncome ? "border-destructive" : ""}
+                    />
+                    {errors.annualIncome && (
+                      <p className="text-sm text-destructive">{errors.annualIncome.message}</p>
+                    )}
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="loanAmount">Loan Amount ($)</Label>
+                      <Input
+                        id="loanAmount"
+                        type="number"
+                        {...register("loanAmount", { valueAsNumber: true })}
+                        placeholder="100000"
+                        className={errors.loanAmount ? "border-destructive" : ""}
+                      />
+                      {errors.loanAmount && (
+                        <p className="text-sm text-destructive">{errors.loanAmount.message}</p>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="loanTerm">Loan Term (months)</Label>
+                      <Input
+                        id="loanTerm"
+                        type="number"
+                        {...register("loanTerm", { valueAsNumber: true })}
+                        placeholder="60"
+                        className={errors.loanTerm ? "border-destructive" : ""}
+                      />
+                      {errors.loanTerm && (
+                        <p className="text-sm text-destructive">{errors.loanTerm.message}</p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="cibilScore">CIBIL Score</Label>
+                    <Input
+                      id="cibilScore"
+                      type="number"
+                      {...register("cibilScore", { valueAsNumber: true })}
+                      placeholder="750"
+                      className={errors.cibilScore ? "border-destructive" : ""}
+                    />
+                    {errors.cibilScore && (
+                      <p className="text-sm text-destructive">{errors.cibilScore.message}</p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-foreground">Business Details</h3>
+                  
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="businessRevenue">Business Revenue ($)</Label>
+                      <Input
+                        id="businessRevenue"
+                        type="number"
+                        {...register("businessRevenue", { valueAsNumber: true })}
+                        placeholder="200000"
+                        className={errors.businessRevenue ? "border-destructive" : ""}
+                      />
+                      {errors.businessRevenue && (
+                        <p className="text-sm text-destructive">{errors.businessRevenue.message}</p>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="businessProfit">Business Profit ($)</Label>
+                      <Input
+                        id="businessProfit"
+                        type="number"
+                        {...register("businessProfit", { valueAsNumber: true })}
+                        placeholder="50000"
+                        className={errors.businessProfit ? "border-destructive" : ""}
+                      />
+                      {errors.businessProfit && (
+                        <p className="text-sm text-destructive">{errors.businessProfit.message}</p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="commercialPropertyValue">Commercial Property Value ($)</Label>
+                    <Input
+                      id="commercialPropertyValue"
+                      type="number"
+                      {...register("commercialPropertyValue", { valueAsNumber: true })}
+                      placeholder="500000"
+                      className={errors.commercialPropertyValue ? "border-destructive" : ""}
+                    />
+                    {errors.commercialPropertyValue && (
+                      <p className="text-sm text-destructive">{errors.commercialPropertyValue.message}</p>
+                    )}
                   </div>
                 </div>
               </>
