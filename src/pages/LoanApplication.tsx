@@ -19,6 +19,7 @@ const loanSchema = z.object({
   creditScore: z.number().min(300, "Credit score must be at least 300").max(850, "Credit score cannot exceed 850"),
   loanAmount: z.number().min(1000, "Loan amount must be at least $1,000"),
   loanTerm: z.number().min(1, "Loan term must be at least 1 month").max(360, "Loan term cannot exceed 360 months"),
+  loanType: z.string().min(1, "Please select loan type"),
   loanPurpose: z.string().min(1, "Please select loan purpose"),
   employmentStatus: z.string().min(1, "Please select employment status"),
   existingLoans: z.number().min(0, "Existing loans cannot be negative"),
@@ -142,7 +143,7 @@ const LoanApplication = () => {
                   <SelectTrigger className={errors.gender ? "border-destructive" : ""}>
                     <SelectValue placeholder="Select gender" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-background z-50">
                     <SelectItem value="male">Male</SelectItem>
                     <SelectItem value="female">Female</SelectItem>
                     <SelectItem value="non-binary">Non-binary</SelectItem>
@@ -215,6 +216,24 @@ const LoanApplication = () => {
               </div>
             </div>
 
+            <div className="space-y-2">
+              <Label htmlFor="loanType">Loan Type</Label>
+              <Select onValueChange={(value) => setValue("loanType", value)}>
+                <SelectTrigger className={errors.loanType ? "border-destructive" : ""}>
+                  <SelectValue placeholder="Select loan type" />
+                </SelectTrigger>
+                <SelectContent className="bg-background z-50">
+                  <SelectItem value="home-loan">Home Loan</SelectItem>
+                  <SelectItem value="personal-loan">Personal Loan</SelectItem>
+                  <SelectItem value="business-loan">Business Loan</SelectItem>
+                  <SelectItem value="educational-loan">Educational Loan</SelectItem>
+                </SelectContent>
+              </Select>
+              {errors.loanType && (
+                <p className="text-sm text-destructive">{errors.loanType.message}</p>
+              )}
+            </div>
+
             <div className="grid md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="employmentStatus">Employment Status</Label>
@@ -222,7 +241,7 @@ const LoanApplication = () => {
                   <SelectTrigger className={errors.employmentStatus ? "border-destructive" : ""}>
                     <SelectValue placeholder="Select employment status" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-background z-50">
                     <SelectItem value="full-time">Full-time</SelectItem>
                     <SelectItem value="part-time">Part-time</SelectItem>
                     <SelectItem value="self-employed">Self-employed</SelectItem>
@@ -241,7 +260,7 @@ const LoanApplication = () => {
                   <SelectTrigger className={errors.loanPurpose ? "border-destructive" : ""}>
                     <SelectValue placeholder="Select loan purpose" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-background z-50">
                     <SelectItem value="home-purchase">Home Purchase</SelectItem>
                     <SelectItem value="home-improvement">Home Improvement</SelectItem>
                     <SelectItem value="debt-consolidation">Debt Consolidation</SelectItem>
