@@ -2,7 +2,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Shield, ArrowLeft, CheckCircle2, XCircle, Info, RefreshCw, FileText } from "lucide-react";
+import { Shield, ArrowLeft, CheckCircle2, XCircle, Info, RefreshCw, FileText, Brain, Sparkles } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
@@ -21,6 +21,7 @@ const LoanResult = () => {
     explanation: string;
     dataUsed: any;
     loanId?: string;
+    predictionMethod?: string;
   } | null;
 
   if (!result) {
@@ -84,6 +85,21 @@ const LoanResult = () => {
         <div className="max-w-3xl mx-auto space-y-6">
           {/* Result Card */}
           <Card className={`p-8 border-2 ${isApproved ? 'border-success bg-success-light/20' : 'border-destructive bg-destructive-light/20'}`}>
+            {/* Prediction Method Badge */}
+            <div className="mb-4 flex items-center gap-2">
+              {result.predictionMethod === 'huggingface' ? (
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20">
+                  <Brain className="h-4 w-4 text-primary" />
+                  <span className="text-sm font-medium text-primary">ML Model Prediction</span>
+                </div>
+              ) : (
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary/50 border border-border/50">
+                  <Sparkles className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm font-medium text-muted-foreground">AI Analysis</span>
+                </div>
+              )}
+            </div>
+
             <div className="flex items-center gap-4 mb-6">
               {isApproved ? (
                 <CheckCircle2 className="h-16 w-16 text-success flex-shrink-0" />

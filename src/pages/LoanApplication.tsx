@@ -23,6 +23,9 @@ const loanSchema = z.object({
   employmentStatus: z.string().min(1, "Please select employment status"),
   existingLoans: z.number().min(0, "Existing loans cannot be negative"),
   savingsBalance: z.number().min(0, "Savings balance cannot be negative"),
+  residentialAssetsValue: z.number().min(0, "Residential assets value cannot be negative"),
+  commercialAssetsValue: z.number().min(0, "Commercial assets value cannot be negative"),
+  luxuryAssetsValue: z.number().min(0, "Luxury assets value cannot be negative"),
 });
 
 type LoanFormData = z.infer<typeof loanSchema>;
@@ -281,6 +284,54 @@ const LoanApplication = () => {
                 />
                 {errors.savingsBalance && (
                   <p className="text-sm text-destructive">{errors.savingsBalance.message}</p>
+                )}
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-foreground">Asset Values</h3>
+              
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="residentialAssetsValue">Residential Assets Value ($)</Label>
+                  <Input
+                    id="residentialAssetsValue"
+                    type="number"
+                    {...register("residentialAssetsValue", { valueAsNumber: true })}
+                    placeholder="150000"
+                    className={errors.residentialAssetsValue ? "border-destructive" : ""}
+                  />
+                  {errors.residentialAssetsValue && (
+                    <p className="text-sm text-destructive">{errors.residentialAssetsValue.message}</p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="commercialAssetsValue">Commercial Assets Value ($)</Label>
+                  <Input
+                    id="commercialAssetsValue"
+                    type="number"
+                    {...register("commercialAssetsValue", { valueAsNumber: true })}
+                    placeholder="50000"
+                    className={errors.commercialAssetsValue ? "border-destructive" : ""}
+                  />
+                  {errors.commercialAssetsValue && (
+                    <p className="text-sm text-destructive">{errors.commercialAssetsValue.message}</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="luxuryAssetsValue">Luxury Assets Value ($)</Label>
+                <Input
+                  id="luxuryAssetsValue"
+                  type="number"
+                  {...register("luxuryAssetsValue", { valueAsNumber: true })}
+                  placeholder="25000"
+                  className={errors.luxuryAssetsValue ? "border-destructive" : ""}
+                />
+                {errors.luxuryAssetsValue && (
+                  <p className="text-sm text-destructive">{errors.luxuryAssetsValue.message}</p>
                 )}
               </div>
             </div>

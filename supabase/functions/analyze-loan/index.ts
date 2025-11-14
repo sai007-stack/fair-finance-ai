@@ -16,13 +16,73 @@ serve(async (req) => {
     const applicationData = await req.json();
     console.log('Received loan application:', applicationData);
 
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-    if (!LOVABLE_API_KEY) {
-      throw new Error('LOVABLE_API_KEY is not configured');
-    }
+    let prediction = 'REJECTED';
+    let confidence = 75;
+    let fairnessScore = 85;
+    let explanation = '';
+    let predictionMethod = 'ai_fallback';
 
-    // Prepare the prompt for AI analysis
-    const prompt = `You are an expert loan officer with deep knowledge of financial risk assessment. Analyze this loan application and provide a fair, unbiased decision.
+    // Try Hugging Face model first
+    try {
+      console.log('Attempting HF model prediction...');
+      
+      const hfResponse = await fetch('https://saipranitha06-ethos_model.hf.space/run/predict', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          data: [
+            applicationData.income,
+            applicationData.loanAmount,
+            applicationData.loanTerm,
+            applicationData.creditScore,
+            applicationData.residentialAssetsValue || 0,
+            applicationData.commercialAssetsValue || 0,
+            applicationData.luxuryAssetsValue || 0,
+            applicationData.savingsBalance,
+          ]
+        }),
+      });
+
+      if (hfResponse.ok) {
+        const hfData = await hfResponse.json();
+        console.log('HF model response:', hfData);
+        
+        // Parse HF response: expects { data: [status, probability, reasons] }
+        if (hfData.data && Array.isArray(hfData.data)) {
+          const [status, probability, reasons] = hfData.data;
+          
+          prediction = status === 'Approved' ? 'APPROVED' : 'REJECTED';
+          confidence = Math.round(probability * 100);
+          explanation = Array.isArray(reasons) ? reasons.join('. ') : String(reasons);
+          fairnessScore = 90; // HF model is assumed to be fair
+          predictionMethod = 'huggingface';
+          
+          console.log('HF prediction successful:', { prediction, confidence });
+          
+          // Only use HF result if confidence is reasonable
+          if (confidence < 60) {
+            console.log('HF confidence too low, falling back to AI');
+            throw new Error('Low confidence from HF model');
+          }
+        } else {
+          throw new Error('Invalid HF response format');
+        }
+      } else {
+        throw new Error(`HF API error: ${hfResponse.status}`);
+      }
+    } catch (hfError) {
+      const errorMessage = hfError instanceof Error ? hfError.message : 'Unknown error';
+      console.log('HF model failed, using AI fallback:', errorMessage);
+      
+      // Fallback to Lovable AI
+      const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+      if (!LOVABLE_API_KEY) {
+        throw new Error('LOVABLE_API_KEY is not configured');
+      }
+
+      const prompt = `You are an expert loan officer with deep knowledge of financial risk assessment. Analyze this loan application and provide a fair, unbiased decision.
 
 Application Details:
 - Name: ${applicationData.name}
@@ -36,6 +96,9 @@ Application Details:
 - Employment Status: ${applicationData.employmentStatus}
 - Existing Loans: $${applicationData.existingLoans}
 - Savings Balance: $${applicationData.savingsBalance}
+- Residential Assets: $${applicationData.residentialAssetsValue || 0}
+- Commercial Assets: $${applicationData.commercialAssetsValue || 0}
+- Luxury Assets: $${applicationData.luxuryAssetsValue || 0}
 
 Provide your analysis in the following format:
 1. Decision: APPROVED or REJECTED
@@ -45,63 +108,64 @@ Provide your analysis in the following format:
 
 Important: Base your decision only on financial factors. Do not discriminate based on age or gender. Focus on debt-to-income ratio, creditworthiness, savings, and loan terms.`;
 
-    // Call Lovable AI
-    const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
-        messages: [
-          {
-            role: 'system',
-            content: 'You are a fair and ethical loan officer AI. Provide objective financial assessments without bias.'
-          },
-          {
-            role: 'user',
-            content: prompt
-          }
-        ],
-      }),
-    });
+      const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'google/gemini-2.5-flash',
+          messages: [
+            {
+              role: 'system',
+              content: 'You are a fair and ethical loan officer AI. Provide objective financial assessments without bias.'
+            },
+            {
+              role: 'user',
+              content: prompt
+            }
+          ],
+        }),
+      });
 
-    if (!aiResponse.ok) {
-      const errorText = await aiResponse.text();
-      console.error('AI Gateway error:', aiResponse.status, errorText);
-      
-      if (aiResponse.status === 429) {
-        return new Response(
-          JSON.stringify({ error: 'Rate limit exceeded. Please try again later.' }),
-          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-      
-      if (aiResponse.status === 402) {
-        return new Response(
-          JSON.stringify({ error: 'Payment required. Please add credits to your Lovable AI workspace.' }),
-          { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+      if (!aiResponse.ok) {
+        const errorText = await aiResponse.text();
+        console.error('AI Gateway error:', aiResponse.status, errorText);
+        
+        if (aiResponse.status === 429) {
+          return new Response(
+            JSON.stringify({ error: 'Rate limit exceeded. Please try again later.' }),
+            { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+        
+        if (aiResponse.status === 402) {
+          return new Response(
+            JSON.stringify({ error: 'Payment required. Please add credits to your Lovable AI workspace.' }),
+            { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+
+        throw new Error(`AI Gateway error: ${errorText}`);
       }
 
-      throw new Error(`AI Gateway error: ${errorText}`);
+      const aiData = await aiResponse.json();
+      const aiAnalysis = aiData.choices[0].message.content;
+      console.log('AI Analysis:', aiAnalysis);
+
+      // Parse AI response
+      const decisionMatch = aiAnalysis.match(/Decision:\s*(APPROVED|REJECTED)/i);
+      const confidenceMatch = aiAnalysis.match(/Confidence Level:\s*(\d+)/);
+      const fairnessMatch = aiAnalysis.match(/Fairness Score:\s*(\d+)/);
+      const explanationMatch = aiAnalysis.match(/Explanation:\s*(.+?)(?=\n\n|\n[A-Z]|$)/s);
+
+      prediction = decisionMatch ? decisionMatch[1].toUpperCase() : 'REJECTED';
+      confidence = confidenceMatch ? parseInt(confidenceMatch[1]) : 75;
+      fairnessScore = fairnessMatch ? parseInt(fairnessMatch[1]) : 85;
+      explanation = explanationMatch ? explanationMatch[1].trim() : aiAnalysis;
+      predictionMethod = 'ai_fallback';
     }
-
-    const aiData = await aiResponse.json();
-    const aiAnalysis = aiData.choices[0].message.content;
-    console.log('AI Analysis:', aiAnalysis);
-
-    // Parse AI response
-    const decisionMatch = aiAnalysis.match(/Decision:\s*(APPROVED|REJECTED)/i);
-    const confidenceMatch = aiAnalysis.match(/Confidence Level:\s*(\d+)/);
-    const fairnessMatch = aiAnalysis.match(/Fairness Score:\s*(\d+)/);
-    const explanationMatch = aiAnalysis.match(/Explanation:\s*(.+?)(?=\n\n|\n[A-Z]|$)/s);
-
-    const prediction = decisionMatch ? decisionMatch[1].toUpperCase() : 'REJECTED';
-    const confidence = confidenceMatch ? parseInt(confidenceMatch[1]) : 75;
-    const fairnessScore = fairnessMatch ? parseInt(fairnessMatch[1]) : 85;
-    const explanation = explanationMatch ? explanationMatch[1].trim() : aiAnalysis;
 
     // Save to database
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
@@ -122,10 +186,14 @@ Important: Base your decision only on financial factors. Do not discriminate bas
         employment_status: applicationData.employmentStatus,
         existing_loans: applicationData.existingLoans,
         savings_balance: applicationData.savingsBalance,
+        residential_assets_value: applicationData.residentialAssetsValue || 0,
+        commercial_assets_value: applicationData.commercialAssetsValue || 0,
+        luxury_assets_value: applicationData.luxuryAssetsValue || 0,
         prediction,
         confidence,
         fairness_score: fairnessScore,
         explanation,
+        prediction_method: predictionMethod,
       })
       .select()
       .single();
@@ -163,6 +231,7 @@ Important: Base your decision only on financial factors. Do not discriminate bas
         fairnessScore,
         explanation,
         applicationId: savedApplication.id,
+        predictionMethod,
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
