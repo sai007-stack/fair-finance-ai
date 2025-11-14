@@ -12,20 +12,38 @@ import { Shield, ArrowLeft, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const loanSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters"),
-  age: z.number().min(18, "You must be at least 18 years old").max(100, "Please enter a valid age"),
-  gender: z.string().min(1, "Please select gender"),
-  income: z.number().min(0, "Income must be positive"),
-  creditScore: z.number().min(300, "Credit score must be at least 300").max(850, "Credit score cannot exceed 850"),
-  loanAmount: z.number().min(1000, "Loan amount must be at least $1,000"),
-  loanTerm: z.number().min(1, "Loan term must be at least 1 month").max(360, "Loan term cannot exceed 360 months"),
   loanType: z.string().min(1, "Please select loan type"),
-  employmentStatus: z.string().min(1, "Please select employment status"),
-  existingLoans: z.number().min(0, "Existing loans cannot be negative"),
-  savingsBalance: z.number().min(0, "Savings balance cannot be negative"),
-  residentialAssetsValue: z.number().min(0, "Residential assets value cannot be negative"),
-  commercialAssetsValue: z.number().min(0, "Commercial assets value cannot be negative"),
-  luxuryAssetsValue: z.number().min(0, "Luxury assets value cannot be negative"),
+  // Home Loan fields
+  annualIncome: z.number().optional(),
+  loanAmount: z.number().optional(),
+  loanTerm: z.number().optional(),
+  cibilScore: z.number().optional(),
+  propertyValue: z.number().optional(),
+  downPayment: z.number().optional(),
+  monthlyExpenses: z.number().optional(),
+  // Other loan type fields (kept for future use)
+  name: z.string().optional(),
+  age: z.number().optional(),
+  gender: z.string().optional(),
+  employmentStatus: z.string().optional(),
+  existingLoans: z.number().optional(),
+  savingsBalance: z.number().optional(),
+}).refine((data) => {
+  if (data.loanType === "home-loan") {
+    return (
+      data.annualIncome !== undefined &&
+      data.loanAmount !== undefined &&
+      data.loanTerm !== undefined &&
+      data.cibilScore !== undefined &&
+      data.propertyValue !== undefined &&
+      data.downPayment !== undefined &&
+      data.monthlyExpenses !== undefined
+    );
+  }
+  return true;
+}, {
+  message: "Please fill in all required fields",
+  path: ["loanType"],
 });
 
 type LoanFormData = z.infer<typeof loanSchema>;
@@ -39,15 +57,43 @@ const LoanApplication = () => {
     register,
     handleSubmit,
     setValue,
+    watch,
     formState: { errors },
   } = useForm<LoanFormData>({
     resolver: zodResolver(loanSchema),
   });
 
+  const selectedLoanType = watch("loanType");
+
   const onSubmit = async (data: LoanFormData) => {
     setIsSubmitting(true);
     
     try {
+      // Map fields based on loan type
+      let mappedData;
+      
+      if (data.loanType === "home-loan") {
+        mappedData = {
+          name: "Home Loan Applicant", // Default name
+          income: data.annualIncome,
+          loanAmount: data.loanAmount,
+          loanTerm: data.loanTerm,
+          creditScore: data.cibilScore,
+          residentialAssetsValue: data.propertyValue,
+          commercialAssetsValue: 0,
+          luxuryAssetsValue: 0,
+          savingsBalance: data.downPayment,
+          loanType: data.loanType,
+          age: 30, // Default values for unused fields
+          gender: "prefer-not-to-say",
+          employmentStatus: "full-time",
+          existingLoans: 0,
+        };
+      } else {
+        // For other loan types, pass data as-is (for future implementation)
+        mappedData = data;
+      }
+
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/analyze-loan`,
         {
@@ -55,7 +101,7 @@ const LoanApplication = () => {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(data),
+          body: JSON.stringify(mappedData),
         }
       );
 
@@ -70,7 +116,7 @@ const LoanApplication = () => {
       navigate('/result', { 
         state: {
           ...result,
-          dataUsed: data,
+          dataUsed: mappedData,
           loanId: result.applicationId,
         }
       });
@@ -109,113 +155,6 @@ const LoanApplication = () => {
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="name">Full Name</Label>
-              <Input
-                id="name"
-                {...register("name")}
-                placeholder="John Doe"
-                className={errors.name ? "border-destructive" : ""}
-              />
-              {errors.name && (
-                <p className="text-sm text-destructive">{errors.name.message}</p>
-              )}
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="age">Age</Label>
-                <Input
-                  id="age"
-                  type="number"
-                  {...register("age", { valueAsNumber: true })}
-                  placeholder="30"
-                  className={errors.age ? "border-destructive" : ""}
-                />
-                {errors.age && (
-                  <p className="text-sm text-destructive">{errors.age.message}</p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="gender">Gender</Label>
-                <Select onValueChange={(value) => setValue("gender", value)}>
-                  <SelectTrigger className={errors.gender ? "border-destructive" : ""}>
-                    <SelectValue placeholder="Select gender" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-background z-50">
-                    <SelectItem value="male">Male</SelectItem>
-                    <SelectItem value="female">Female</SelectItem>
-                    <SelectItem value="non-binary">Non-binary</SelectItem>
-                    <SelectItem value="prefer-not-to-say">Prefer not to say</SelectItem>
-                  </SelectContent>
-                </Select>
-                {errors.gender && (
-                  <p className="text-sm text-destructive">{errors.gender.message}</p>
-                )}
-              </div>
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="income">Annual Income ($)</Label>
-                <Input
-                  id="income"
-                  type="number"
-                  {...register("income", { valueAsNumber: true })}
-                  placeholder="50000"
-                  className={errors.income ? "border-destructive" : ""}
-                />
-                {errors.income && (
-                  <p className="text-sm text-destructive">{errors.income.message}</p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="creditScore">Credit Score</Label>
-                <Input
-                  id="creditScore"
-                  type="number"
-                  {...register("creditScore", { valueAsNumber: true })}
-                  placeholder="720"
-                  className={errors.creditScore ? "border-destructive" : ""}
-                />
-                {errors.creditScore && (
-                  <p className="text-sm text-destructive">{errors.creditScore.message}</p>
-                )}
-              </div>
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="loanAmount">Loan Amount ($)</Label>
-                <Input
-                  id="loanAmount"
-                  type="number"
-                  {...register("loanAmount", { valueAsNumber: true })}
-                  placeholder="25000"
-                  className={errors.loanAmount ? "border-destructive" : ""}
-                />
-                {errors.loanAmount && (
-                  <p className="text-sm text-destructive">{errors.loanAmount.message}</p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="loanTerm">Loan Term (months)</Label>
-                <Input
-                  id="loanTerm"
-                  type="number"
-                  {...register("loanTerm", { valueAsNumber: true })}
-                  placeholder="60"
-                  className={errors.loanTerm ? "border-destructive" : ""}
-                />
-                {errors.loanTerm && (
-                  <p className="text-sm text-destructive">{errors.loanTerm.message}</p>
-                )}
-              </div>
-            </div>
-
-            <div className="space-y-2">
               <Label htmlFor="loanType">Loan Type</Label>
               <Select onValueChange={(value) => setValue("loanType", value)}>
                 <SelectTrigger className={errors.loanType ? "border-destructive" : ""}>
@@ -233,104 +172,119 @@ const LoanApplication = () => {
               )}
             </div>
 
-            <div className="grid md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="employmentStatus">Employment Status</Label>
-                <Select onValueChange={(value) => setValue("employmentStatus", value)}>
-                  <SelectTrigger className={errors.employmentStatus ? "border-destructive" : ""}>
-                    <SelectValue placeholder="Select employment status" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-background z-50">
-                    <SelectItem value="full-time">Full-time</SelectItem>
-                    <SelectItem value="part-time">Part-time</SelectItem>
-                    <SelectItem value="self-employed">Self-employed</SelectItem>
-                    <SelectItem value="unemployed">Unemployed</SelectItem>
-                    <SelectItem value="retired">Retired</SelectItem>
-                  </SelectContent>
-                </Select>
-                {errors.employmentStatus && (
-                  <p className="text-sm text-destructive">{errors.employmentStatus.message}</p>
-                )}
-              </div>
-            </div>
+            {selectedLoanType === "home-loan" && (
+              <>
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-foreground">Basic Information</h3>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="annualIncome">Annual Income ($)</Label>
+                    <Input
+                      id="annualIncome"
+                      type="number"
+                      {...register("annualIncome", { valueAsNumber: true })}
+                      placeholder="75000"
+                      className={errors.annualIncome ? "border-destructive" : ""}
+                    />
+                    {errors.annualIncome && (
+                      <p className="text-sm text-destructive">{errors.annualIncome.message}</p>
+                    )}
+                  </div>
 
-            <div className="grid md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="existingLoans">Existing Loans ($)</Label>
-                <Input
-                  id="existingLoans"
-                  type="number"
-                  {...register("existingLoans", { valueAsNumber: true })}
-                  placeholder="5000"
-                  className={errors.existingLoans ? "border-destructive" : ""}
-                />
-                {errors.existingLoans && (
-                  <p className="text-sm text-destructive">{errors.existingLoans.message}</p>
-                )}
-              </div>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="loanAmount">Loan Amount ($)</Label>
+                      <Input
+                        id="loanAmount"
+                        type="number"
+                        {...register("loanAmount", { valueAsNumber: true })}
+                        placeholder="250000"
+                        className={errors.loanAmount ? "border-destructive" : ""}
+                      />
+                      {errors.loanAmount && (
+                        <p className="text-sm text-destructive">{errors.loanAmount.message}</p>
+                      )}
+                    </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="savingsBalance">Savings Balance ($)</Label>
-                <Input
-                  id="savingsBalance"
-                  type="number"
-                  {...register("savingsBalance", { valueAsNumber: true })}
-                  placeholder="10000"
-                  className={errors.savingsBalance ? "border-destructive" : ""}
-                />
-                {errors.savingsBalance && (
-                  <p className="text-sm text-destructive">{errors.savingsBalance.message}</p>
-                )}
-              </div>
-            </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="loanTerm">Loan Term (months)</Label>
+                      <Input
+                        id="loanTerm"
+                        type="number"
+                        {...register("loanTerm", { valueAsNumber: true })}
+                        placeholder="360"
+                        className={errors.loanTerm ? "border-destructive" : ""}
+                      />
+                      {errors.loanTerm && (
+                        <p className="text-sm text-destructive">{errors.loanTerm.message}</p>
+                      )}
+                    </div>
+                  </div>
 
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-foreground">Asset Values</h3>
-              
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="residentialAssetsValue">Residential Assets Value ($)</Label>
-                  <Input
-                    id="residentialAssetsValue"
-                    type="number"
-                    {...register("residentialAssetsValue", { valueAsNumber: true })}
-                    placeholder="150000"
-                    className={errors.residentialAssetsValue ? "border-destructive" : ""}
-                  />
-                  {errors.residentialAssetsValue && (
-                    <p className="text-sm text-destructive">{errors.residentialAssetsValue.message}</p>
-                  )}
+                  <div className="space-y-2">
+                    <Label htmlFor="cibilScore">CIBIL Score</Label>
+                    <Input
+                      id="cibilScore"
+                      type="number"
+                      {...register("cibilScore", { valueAsNumber: true })}
+                      placeholder="750"
+                      className={errors.cibilScore ? "border-destructive" : ""}
+                    />
+                    {errors.cibilScore && (
+                      <p className="text-sm text-destructive">{errors.cibilScore.message}</p>
+                    )}
+                  </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="commercialAssetsValue">Commercial Assets Value ($)</Label>
-                  <Input
-                    id="commercialAssetsValue"
-                    type="number"
-                    {...register("commercialAssetsValue", { valueAsNumber: true })}
-                    placeholder="50000"
-                    className={errors.commercialAssetsValue ? "border-destructive" : ""}
-                  />
-                  {errors.commercialAssetsValue && (
-                    <p className="text-sm text-destructive">{errors.commercialAssetsValue.message}</p>
-                  )}
-                </div>
-              </div>
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-foreground">Property Details</h3>
+                  
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="propertyValue">Property Value ($)</Label>
+                      <Input
+                        id="propertyValue"
+                        type="number"
+                        {...register("propertyValue", { valueAsNumber: true })}
+                        placeholder="300000"
+                        className={errors.propertyValue ? "border-destructive" : ""}
+                      />
+                      {errors.propertyValue && (
+                        <p className="text-sm text-destructive">{errors.propertyValue.message}</p>
+                      )}
+                    </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="luxuryAssetsValue">Luxury Assets Value ($)</Label>
-                <Input
-                  id="luxuryAssetsValue"
-                  type="number"
-                  {...register("luxuryAssetsValue", { valueAsNumber: true })}
-                  placeholder="25000"
-                  className={errors.luxuryAssetsValue ? "border-destructive" : ""}
-                />
-                {errors.luxuryAssetsValue && (
-                  <p className="text-sm text-destructive">{errors.luxuryAssetsValue.message}</p>
-                )}
-              </div>
-            </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="downPayment">Down Payment ($)</Label>
+                      <Input
+                        id="downPayment"
+                        type="number"
+                        {...register("downPayment", { valueAsNumber: true })}
+                        placeholder="50000"
+                        className={errors.downPayment ? "border-destructive" : ""}
+                      />
+                      {errors.downPayment && (
+                        <p className="text-sm text-destructive">{errors.downPayment.message}</p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="monthlyExpenses">Monthly Expenses ($)</Label>
+                    <Input
+                      id="monthlyExpenses"
+                      type="number"
+                      {...register("monthlyExpenses", { valueAsNumber: true })}
+                      placeholder="2000"
+                      className={errors.monthlyExpenses ? "border-destructive" : ""}
+                    />
+                    {errors.monthlyExpenses && (
+                      <p className="text-sm text-destructive">{errors.monthlyExpenses.message}</p>
+                    )}
+                  </div>
+                </div>
+              </>
+            )}
 
             <Button 
               type="submit" 
