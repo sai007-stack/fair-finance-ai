@@ -14,6 +14,50 @@ export type Database = {
   }
   public: {
     Tables: {
+      appeals: {
+        Row: {
+          created_at: string
+          final_decision: string | null
+          id: string
+          loan_id: string
+          reason_codes: Json
+          review_comment: string | null
+          reviewed_at: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          final_decision?: string | null
+          id?: string
+          loan_id: string
+          reason_codes: Json
+          review_comment?: string | null
+          reviewed_at?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          final_decision?: string | null
+          id?: string
+          loan_id?: string
+          reason_codes?: Json
+          review_comment?: string | null
+          reviewed_at?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appeals_loan_id_fkey"
+            columns: ["loan_id"]
+            isOneToOne: false
+            referencedRelation: "loan_applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       approved_loans: {
         Row: {
           application_id: string
@@ -58,6 +102,7 @@ export type Database = {
       loan_applications: {
         Row: {
           age: number | null
+          commercial_assets_value: number | null
           confidence: number | null
           created_at: string
           credit_score: number
@@ -71,13 +116,17 @@ export type Database = {
           loan_amount: number
           loan_purpose: string | null
           loan_term: number
+          luxury_assets_value: number | null
           name: string
           prediction: string | null
+          prediction_method: string | null
+          residential_assets_value: number | null
           savings_balance: number
           updated_at: string
         }
         Insert: {
           age?: number | null
+          commercial_assets_value?: number | null
           confidence?: number | null
           created_at?: string
           credit_score: number
@@ -91,13 +140,17 @@ export type Database = {
           loan_amount: number
           loan_purpose?: string | null
           loan_term: number
+          luxury_assets_value?: number | null
           name: string
           prediction?: string | null
+          prediction_method?: string | null
+          residential_assets_value?: number | null
           savings_balance?: number
           updated_at?: string
         }
         Update: {
           age?: number | null
+          commercial_assets_value?: number | null
           confidence?: number | null
           created_at?: string
           credit_score?: number
@@ -111,10 +164,58 @@ export type Database = {
           loan_amount?: number
           loan_purpose?: string | null
           loan_term?: number
+          luxury_assets_value?: number | null
           name?: string
           prediction?: string | null
+          prediction_method?: string | null
+          residential_assets_value?: number | null
           savings_balance?: number
           updated_at?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          read: boolean
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          read?: boolean
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          read?: boolean
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string | null
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
         }
         Relationships: []
       }
@@ -123,10 +224,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_user_role: {
+        Args: { user_id: string }
+        Returns: Database["public"]["Enums"]["app_role"]
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "user" | "employee"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -253,6 +357,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["user", "employee"],
+    },
   },
 } as const
