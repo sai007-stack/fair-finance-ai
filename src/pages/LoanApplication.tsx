@@ -27,6 +27,10 @@ const loanSchema = z.object({
   businessRevenue: z.number().optional(),
   businessProfit: z.number().optional(),
   commercialPropertyValue: z.number().optional(),
+  // Educational Loan fields
+  tuitionFee: z.number().optional(),
+  courseDuration: z.number().optional(),
+  studentExpenses: z.number().optional(),
   // Other loan type fields (kept for future use)
   name: z.string().optional(),
   age: z.number().optional(),
@@ -65,6 +69,15 @@ const loanSchema = z.object({
       data.businessRevenue !== undefined &&
       data.businessProfit !== undefined &&
       data.commercialPropertyValue !== undefined
+    );
+  }
+  if (data.loanType === "educational-loan") {
+    return (
+      data.annualIncome !== undefined &&
+      data.cibilScore !== undefined &&
+      data.tuitionFee !== undefined &&
+      data.courseDuration !== undefined &&
+      data.studentExpenses !== undefined
     );
   }
   return true;
@@ -148,6 +161,23 @@ const LoanApplication = () => {
           age: 30,
           gender: "prefer-not-to-say",
           employmentStatus: "self-employed",
+          existingLoans: 0,
+        };
+      } else if (data.loanType === "educational-loan") {
+        mappedData = {
+          name: "Educational Loan Applicant",
+          income: data.annualIncome,
+          loanAmount: data.tuitionFee,
+          loanTerm: data.courseDuration,
+          creditScore: data.cibilScore,
+          residentialAssetsValue: 0,
+          commercialAssetsValue: 0,
+          luxuryAssetsValue: 0,
+          savingsBalance: data.studentExpenses,
+          loanType: data.loanType,
+          age: 22,
+          gender: "prefer-not-to-say",
+          employmentStatus: "unemployed",
           existingLoans: 0,
         };
       } else {
@@ -555,6 +585,90 @@ const LoanApplication = () => {
                     />
                     {errors.commercialPropertyValue && (
                       <p className="text-sm text-destructive">{errors.commercialPropertyValue.message}</p>
+                    )}
+                  </div>
+                </div>
+              </>
+            )}
+
+            {selectedLoanType === "educational-loan" && (
+              <>
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-foreground">Basic Information</h3>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="annualIncome">Annual Income ($)</Label>
+                    <Input
+                      id="annualIncome"
+                      type="number"
+                      {...register("annualIncome", { valueAsNumber: true })}
+                      placeholder="40000"
+                      className={errors.annualIncome ? "border-destructive" : ""}
+                    />
+                    {errors.annualIncome && (
+                      <p className="text-sm text-destructive">{errors.annualIncome.message}</p>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="cibilScore">CIBIL Score</Label>
+                    <Input
+                      id="cibilScore"
+                      type="number"
+                      {...register("cibilScore", { valueAsNumber: true })}
+                      placeholder="700"
+                      className={errors.cibilScore ? "border-destructive" : ""}
+                    />
+                    {errors.cibilScore && (
+                      <p className="text-sm text-destructive">{errors.cibilScore.message}</p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-foreground">Education Details</h3>
+                  
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="tuitionFee">Tuition Fee ($)</Label>
+                      <Input
+                        id="tuitionFee"
+                        type="number"
+                        {...register("tuitionFee", { valueAsNumber: true })}
+                        placeholder="30000"
+                        className={errors.tuitionFee ? "border-destructive" : ""}
+                      />
+                      {errors.tuitionFee && (
+                        <p className="text-sm text-destructive">{errors.tuitionFee.message}</p>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="courseDuration">Course Duration (months)</Label>
+                      <Input
+                        id="courseDuration"
+                        type="number"
+                        {...register("courseDuration", { valueAsNumber: true })}
+                        placeholder="48"
+                        className={errors.courseDuration ? "border-destructive" : ""}
+                      />
+                      {errors.courseDuration && (
+                        <p className="text-sm text-destructive">{errors.courseDuration.message}</p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="studentExpenses">Student Expenses ($)</Label>
+                    <Input
+                      id="studentExpenses"
+                      type="number"
+                      {...register("studentExpenses", { valueAsNumber: true })}
+                      placeholder="5000"
+                      className={errors.studentExpenses ? "border-destructive" : ""}
+                    />
+                    {errors.studentExpenses && (
+                      <p className="text-sm text-destructive">{errors.studentExpenses.message}</p>
                     )}
                   </div>
                 </div>
