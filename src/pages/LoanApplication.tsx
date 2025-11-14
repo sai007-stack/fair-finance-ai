@@ -20,7 +20,6 @@ const loanSchema = z.object({
   loanAmount: z.number().min(1000, "Loan amount must be at least $1,000"),
   loanTerm: z.number().min(1, "Loan term must be at least 1 month").max(360, "Loan term cannot exceed 360 months"),
   loanType: z.string().min(1, "Please select loan type"),
-  loanPurpose: z.string().min(1, "Please select loan purpose"),
   employmentStatus: z.string().min(1, "Please select employment status"),
   existingLoans: z.number().min(0, "Existing loans cannot be negative"),
   savingsBalance: z.number().min(0, "Savings balance cannot be negative"),
@@ -251,28 +250,6 @@ const LoanApplication = () => {
                 </Select>
                 {errors.employmentStatus && (
                   <p className="text-sm text-destructive">{errors.employmentStatus.message}</p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="loanPurpose">Loan Purpose</Label>
-                <Select onValueChange={(value) => setValue("loanPurpose", value)}>
-                  <SelectTrigger className={errors.loanPurpose ? "border-destructive" : ""}>
-                    <SelectValue placeholder="Select loan purpose" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-background z-50">
-                    <SelectItem value="home-purchase">Home Purchase</SelectItem>
-                    <SelectItem value="home-improvement">Home Improvement</SelectItem>
-                    <SelectItem value="debt-consolidation">Debt Consolidation</SelectItem>
-                    <SelectItem value="business">Business</SelectItem>
-                    <SelectItem value="education">Education</SelectItem>
-                    <SelectItem value="medical">Medical</SelectItem>
-                    <SelectItem value="vehicle">Vehicle</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
-                {errors.loanPurpose && (
-                  <p className="text-sm text-destructive">{errors.loanPurpose.message}</p>
                 )}
               </div>
             </div>
