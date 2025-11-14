@@ -13,6 +13,10 @@ import { useToast } from "@/hooks/use-toast";
 
 const loanSchema = z.object({
   loanType: z.string().min(1, "Please select loan type"),
+  // Common fields for all loan types
+  name: z.string().optional(),
+  age: z.number().optional(),
+  gender: z.string().optional(),
   // Home Loan fields
   annualIncome: z.number().optional(),
   loanAmount: z.number().optional(),
@@ -31,16 +35,16 @@ const loanSchema = z.object({
   tuitionFee: z.number().optional(),
   courseDuration: z.number().optional(),
   studentExpenses: z.number().optional(),
-  // Other loan type fields (kept for future use)
-  name: z.string().optional(),
-  age: z.number().optional(),
-  gender: z.string().optional(),
+  // Other fields
   employmentStatus: z.string().optional(),
   existingLoans: z.number().optional(),
   savingsBalance: z.number().optional(),
 }).refine((data) => {
   if (data.loanType === "home-loan") {
     return (
+      data.name !== undefined &&
+      data.age !== undefined &&
+      data.gender !== undefined &&
       data.annualIncome !== undefined &&
       data.loanAmount !== undefined &&
       data.loanTerm !== undefined &&
@@ -52,6 +56,9 @@ const loanSchema = z.object({
   }
   if (data.loanType === "personal-loan") {
     return (
+      data.name !== undefined &&
+      data.age !== undefined &&
+      data.gender !== undefined &&
       data.annualIncome !== undefined &&
       data.loanAmount !== undefined &&
       data.loanTerm !== undefined &&
@@ -62,6 +69,9 @@ const loanSchema = z.object({
   }
   if (data.loanType === "business-loan") {
     return (
+      data.name !== undefined &&
+      data.age !== undefined &&
+      data.gender !== undefined &&
       data.annualIncome !== undefined &&
       data.loanAmount !== undefined &&
       data.loanTerm !== undefined &&
@@ -73,6 +83,9 @@ const loanSchema = z.object({
   }
   if (data.loanType === "educational-loan") {
     return (
+      data.name !== undefined &&
+      data.age !== undefined &&
+      data.gender !== undefined &&
       data.annualIncome !== undefined &&
       data.cibilScore !== undefined &&
       data.tuitionFee !== undefined &&
@@ -114,7 +127,9 @@ const LoanApplication = () => {
       
       if (data.loanType === "home-loan") {
         mappedData = {
-          name: "Home Loan Applicant",
+          name: data.name,
+          age: data.age,
+          gender: data.gender,
           income: data.annualIncome,
           loanAmount: data.loanAmount,
           loanTerm: data.loanTerm,
@@ -124,14 +139,14 @@ const LoanApplication = () => {
           luxuryAssetsValue: 0,
           savingsBalance: data.downPayment,
           loanType: data.loanType,
-          age: 30,
-          gender: "prefer-not-to-say",
           employmentStatus: "full-time",
           existingLoans: 0,
         };
       } else if (data.loanType === "personal-loan") {
         mappedData = {
-          name: "Personal Loan Applicant",
+          name: data.name,
+          age: data.age,
+          gender: data.gender,
           income: (data.annualIncome || 0) - (data.monthlyExpenses || 0) - (data.existingEmis || 0),
           loanAmount: data.loanAmount,
           loanTerm: data.loanTerm,
@@ -141,14 +156,14 @@ const LoanApplication = () => {
           luxuryAssetsValue: 0,
           savingsBalance: (data.annualIncome || 0) / 12,
           loanType: data.loanType,
-          age: 30,
-          gender: "prefer-not-to-say",
           employmentStatus: "full-time",
           existingLoans: 0,
         };
       } else if (data.loanType === "business-loan") {
         mappedData = {
-          name: "Business Loan Applicant",
+          name: data.name,
+          age: data.age,
+          gender: data.gender,
           income: (data.annualIncome || 0) + (data.businessRevenue || 0) + (data.businessProfit || 0),
           loanAmount: data.loanAmount,
           loanTerm: data.loanTerm,
@@ -158,14 +173,14 @@ const LoanApplication = () => {
           luxuryAssetsValue: 0,
           savingsBalance: data.businessProfit,
           loanType: data.loanType,
-          age: 30,
-          gender: "prefer-not-to-say",
           employmentStatus: "self-employed",
           existingLoans: 0,
         };
       } else if (data.loanType === "educational-loan") {
         mappedData = {
-          name: "Educational Loan Applicant",
+          name: data.name,
+          age: data.age,
+          gender: data.gender,
           income: data.annualIncome,
           loanAmount: data.tuitionFee,
           loanTerm: data.courseDuration,
@@ -175,8 +190,6 @@ const LoanApplication = () => {
           luxuryAssetsValue: 0,
           savingsBalance: data.studentExpenses,
           loanType: data.loanType,
-          age: 22,
-          gender: "prefer-not-to-say",
           employmentStatus: "unemployed",
           existingLoans: 0,
         };
@@ -266,8 +279,55 @@ const LoanApplication = () => {
             {selectedLoanType === "home-loan" && (
               <>
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-foreground">Basic Information</h3>
+                  <h3 className="text-lg font-semibold text-foreground">Personal Information</h3>
                   
+                  <div className="space-y-2">
+                    <Label htmlFor="name">Full Name</Label>
+                    <Input
+                      id="name"
+                      {...register("name")}
+                      placeholder="John Doe"
+                      className={errors.name ? "border-destructive" : ""}
+                    />
+                    {errors.name && (
+                      <p className="text-sm text-destructive">{errors.name.message}</p>
+                    )}
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="age">Age</Label>
+                      <Input
+                        id="age"
+                        type="number"
+                        {...register("age", { valueAsNumber: true })}
+                        placeholder="30"
+                        className={errors.age ? "border-destructive" : ""}
+                      />
+                      {errors.age && (
+                        <p className="text-sm text-destructive">{errors.age.message}</p>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="gender">Gender</Label>
+                      <Select onValueChange={(value) => setValue("gender", value)}>
+                        <SelectTrigger className={errors.gender ? "border-destructive" : ""}>
+                          <SelectValue placeholder="Select gender" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-background z-50">
+                          <SelectItem value="male">Male</SelectItem>
+                          <SelectItem value="female">Female</SelectItem>
+                          <SelectItem value="non-binary">Non-binary</SelectItem>
+                          <SelectItem value="prefer-not-to-say">Prefer not to say</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      {errors.gender && (
+                        <p className="text-sm text-destructive">{errors.gender.message}</p>
+                      )}
+                    </div>
+                  </div>
+
                   <div className="space-y-2">
                     <Label htmlFor="annualIncome">Annual Income ($)</Label>
                     <Input
@@ -380,8 +440,55 @@ const LoanApplication = () => {
             {selectedLoanType === "personal-loan" && (
               <>
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-foreground">Basic Information</h3>
+                  <h3 className="text-lg font-semibold text-foreground">Personal Information</h3>
                   
+                  <div className="space-y-2">
+                    <Label htmlFor="name">Full Name</Label>
+                    <Input
+                      id="name"
+                      {...register("name")}
+                      placeholder="John Doe"
+                      className={errors.name ? "border-destructive" : ""}
+                    />
+                    {errors.name && (
+                      <p className="text-sm text-destructive">{errors.name.message}</p>
+                    )}
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="age">Age</Label>
+                      <Input
+                        id="age"
+                        type="number"
+                        {...register("age", { valueAsNumber: true })}
+                        placeholder="30"
+                        className={errors.age ? "border-destructive" : ""}
+                      />
+                      {errors.age && (
+                        <p className="text-sm text-destructive">{errors.age.message}</p>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="gender">Gender</Label>
+                      <Select onValueChange={(value) => setValue("gender", value)}>
+                        <SelectTrigger className={errors.gender ? "border-destructive" : ""}>
+                          <SelectValue placeholder="Select gender" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-background z-50">
+                          <SelectItem value="male">Male</SelectItem>
+                          <SelectItem value="female">Female</SelectItem>
+                          <SelectItem value="non-binary">Non-binary</SelectItem>
+                          <SelectItem value="prefer-not-to-say">Prefer not to say</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      {errors.gender && (
+                        <p className="text-sm text-destructive">{errors.gender.message}</p>
+                      )}
+                    </div>
+                  </div>
+
                   <div className="space-y-2">
                     <Label htmlFor="annualIncome">Annual Income ($)</Label>
                     <Input
@@ -480,8 +587,55 @@ const LoanApplication = () => {
             {selectedLoanType === "business-loan" && (
               <>
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-foreground">Basic Information</h3>
+                  <h3 className="text-lg font-semibold text-foreground">Personal Information</h3>
                   
+                  <div className="space-y-2">
+                    <Label htmlFor="name">Full Name</Label>
+                    <Input
+                      id="name"
+                      {...register("name")}
+                      placeholder="John Doe"
+                      className={errors.name ? "border-destructive" : ""}
+                    />
+                    {errors.name && (
+                      <p className="text-sm text-destructive">{errors.name.message}</p>
+                    )}
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="age">Age</Label>
+                      <Input
+                        id="age"
+                        type="number"
+                        {...register("age", { valueAsNumber: true })}
+                        placeholder="35"
+                        className={errors.age ? "border-destructive" : ""}
+                      />
+                      {errors.age && (
+                        <p className="text-sm text-destructive">{errors.age.message}</p>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="gender">Gender</Label>
+                      <Select onValueChange={(value) => setValue("gender", value)}>
+                        <SelectTrigger className={errors.gender ? "border-destructive" : ""}>
+                          <SelectValue placeholder="Select gender" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-background z-50">
+                          <SelectItem value="male">Male</SelectItem>
+                          <SelectItem value="female">Female</SelectItem>
+                          <SelectItem value="non-binary">Non-binary</SelectItem>
+                          <SelectItem value="prefer-not-to-say">Prefer not to say</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      {errors.gender && (
+                        <p className="text-sm text-destructive">{errors.gender.message}</p>
+                      )}
+                    </div>
+                  </div>
+
                   <div className="space-y-2">
                     <Label htmlFor="annualIncome">Annual Income ($)</Label>
                     <Input
@@ -594,8 +748,55 @@ const LoanApplication = () => {
             {selectedLoanType === "educational-loan" && (
               <>
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-foreground">Basic Information</h3>
+                  <h3 className="text-lg font-semibold text-foreground">Personal Information</h3>
                   
+                  <div className="space-y-2">
+                    <Label htmlFor="name">Full Name</Label>
+                    <Input
+                      id="name"
+                      {...register("name")}
+                      placeholder="John Doe"
+                      className={errors.name ? "border-destructive" : ""}
+                    />
+                    {errors.name && (
+                      <p className="text-sm text-destructive">{errors.name.message}</p>
+                    )}
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="age">Age</Label>
+                      <Input
+                        id="age"
+                        type="number"
+                        {...register("age", { valueAsNumber: true })}
+                        placeholder="22"
+                        className={errors.age ? "border-destructive" : ""}
+                      />
+                      {errors.age && (
+                        <p className="text-sm text-destructive">{errors.age.message}</p>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="gender">Gender</Label>
+                      <Select onValueChange={(value) => setValue("gender", value)}>
+                        <SelectTrigger className={errors.gender ? "border-destructive" : ""}>
+                          <SelectValue placeholder="Select gender" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-background z-50">
+                          <SelectItem value="male">Male</SelectItem>
+                          <SelectItem value="female">Female</SelectItem>
+                          <SelectItem value="non-binary">Non-binary</SelectItem>
+                          <SelectItem value="prefer-not-to-say">Prefer not to say</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      {errors.gender && (
+                        <p className="text-sm text-destructive">{errors.gender.message}</p>
+                      )}
+                    </div>
+                  </div>
+
                   <div className="space-y-2">
                     <Label htmlFor="annualIncome">Annual Income ($)</Label>
                     <Input
