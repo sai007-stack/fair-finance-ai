@@ -32,6 +32,7 @@ const Auth = () => {
     const formData = new FormData(e.currentTarget);
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
+    const selectedRole = formData.get("role") as string;
 
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
@@ -48,13 +49,24 @@ const Auth = () => {
       return;
     }
 
-    // Get user role and redirect accordingly
+    // Get user role and validate against selected role
     if (data.user) {
       const { data: roleData } = await supabase
         .from("user_roles")
         .select("role")
         .eq("user_id", data.user.id)
         .single();
+
+      if (roleData?.role !== selectedRole) {
+        await supabase.auth.signOut();
+        toast({
+          title: "Login Failed",
+          description: `This account is not registered as ${selectedRole}. Please select the correct account type.`,
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
 
       toast({
         title: "Login Successful",
@@ -168,6 +180,18 @@ const Auth = () => {
                     placeholder="••••••••"
                     required
                   />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="login-role">Login As</Label>
+                  <Select name="role" required defaultValue="user">
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select account type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="user">User</SelectItem>
+                      <SelectItem value="employee">Employee</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <Button type="submit" className="w-full" disabled={isLoading}>
                   {isLoading ? "Logging in..." : "Login"}
