@@ -17,6 +17,7 @@ const loanSchema = z.object({
   name: z.string().optional(),
   age: z.number().optional(),
   gender: z.string().optional(),
+  aadharId: z.string().optional(),
   // Home Loan fields
   annualIncome: z.number().optional(),
   loanAmount: z.number().optional(),
@@ -39,12 +40,15 @@ const loanSchema = z.object({
   employmentStatus: z.string().optional(),
   existingLoans: z.number().optional(),
   savingsBalance: z.number().optional(),
+  // Document uploads (stored as file names or base64)
+  documents: z.any().optional(),
 }).refine((data) => {
   if (data.loanType === "home-loan") {
     return (
       data.name !== undefined &&
       data.age !== undefined &&
       data.gender !== undefined &&
+      data.aadharId !== undefined &&
       data.annualIncome !== undefined &&
       data.loanAmount !== undefined &&
       data.loanTerm !== undefined &&
@@ -59,6 +63,7 @@ const loanSchema = z.object({
       data.name !== undefined &&
       data.age !== undefined &&
       data.gender !== undefined &&
+      data.aadharId !== undefined &&
       data.annualIncome !== undefined &&
       data.loanAmount !== undefined &&
       data.loanTerm !== undefined &&
@@ -72,6 +77,7 @@ const loanSchema = z.object({
       data.name !== undefined &&
       data.age !== undefined &&
       data.gender !== undefined &&
+      data.aadharId !== undefined &&
       data.annualIncome !== undefined &&
       data.loanAmount !== undefined &&
       data.loanTerm !== undefined &&
@@ -86,6 +92,7 @@ const loanSchema = z.object({
       data.name !== undefined &&
       data.age !== undefined &&
       data.gender !== undefined &&
+      data.aadharId !== undefined &&
       data.annualIncome !== undefined &&
       data.cibilScore !== undefined &&
       data.tuitionFee !== undefined &&
@@ -329,6 +336,20 @@ const LoanApplication = () => {
                   </div>
 
                   <div className="space-y-2">
+                    <Label htmlFor="aadharId">Aadhar ID</Label>
+                    <Input
+                      id="aadharId"
+                      {...register("aadharId")}
+                      placeholder="1234-5678-9012"
+                      maxLength={14}
+                      className={errors.aadharId ? "border-destructive" : ""}
+                    />
+                    {errors.aadharId && (
+                      <p className="text-sm text-destructive">{errors.aadharId.message}</p>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
                     <Label htmlFor="annualIncome">Annual Income (₹)</Label>
                     <Input
                       id="annualIncome"
@@ -434,6 +455,23 @@ const LoanApplication = () => {
                     )}
                   </div>
                 </div>
+
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-foreground">Document Upload</h3>
+                  <p className="text-sm text-muted-foreground">Upload required documents (Property documents, Income proof, ID proof)</p>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="documents">Upload Documents</Label>
+                    <Input
+                      id="documents"
+                      type="file"
+                      multiple
+                      accept=".pdf,.jpg,.jpeg,.png"
+                      className="cursor-pointer"
+                    />
+                    <p className="text-xs text-muted-foreground">Accepted formats: PDF, JPG, PNG</p>
+                  </div>
+                </div>
               </>
             )}
 
@@ -487,6 +525,20 @@ const LoanApplication = () => {
                         <p className="text-sm text-destructive">{errors.gender.message}</p>
                       )}
                     </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="aadharId">Aadhar ID</Label>
+                    <Input
+                      id="aadharId"
+                      {...register("aadharId")}
+                      placeholder="1234-5678-9012"
+                      maxLength={14}
+                      className={errors.aadharId ? "border-destructive" : ""}
+                    />
+                    {errors.aadharId && (
+                      <p className="text-sm text-destructive">{errors.aadharId.message}</p>
+                    )}
                   </div>
 
                   <div className="space-y-2">
@@ -581,6 +633,23 @@ const LoanApplication = () => {
                     </div>
                   </div>
                 </div>
+
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-foreground">Document Upload</h3>
+                  <p className="text-sm text-muted-foreground">Upload required documents (Income proof, ID proof)</p>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="documents">Upload Documents</Label>
+                    <Input
+                      id="documents"
+                      type="file"
+                      multiple
+                      accept=".pdf,.jpg,.jpeg,.png"
+                      className="cursor-pointer"
+                    />
+                    <p className="text-xs text-muted-foreground">Accepted formats: PDF, JPG, PNG</p>
+                  </div>
+                </div>
               </>
             )}
 
@@ -634,6 +703,20 @@ const LoanApplication = () => {
                         <p className="text-sm text-destructive">{errors.gender.message}</p>
                       )}
                     </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="aadharId">Aadhar ID</Label>
+                    <Input
+                      id="aadharId"
+                      {...register("aadharId")}
+                      placeholder="1234-5678-9012"
+                      maxLength={14}
+                      className={errors.aadharId ? "border-destructive" : ""}
+                    />
+                    {errors.aadharId && (
+                      <p className="text-sm text-destructive">{errors.aadharId.message}</p>
+                    )}
                   </div>
 
                   <div className="space-y-2">
@@ -742,6 +825,23 @@ const LoanApplication = () => {
                     )}
                   </div>
                 </div>
+
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-foreground">Document Upload</h3>
+                  <p className="text-sm text-muted-foreground">Upload required documents (Business registration, Financial statements, Tax returns)</p>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="documents">Upload Documents</Label>
+                    <Input
+                      id="documents"
+                      type="file"
+                      multiple
+                      accept=".pdf,.jpg,.jpeg,.png"
+                      className="cursor-pointer"
+                    />
+                    <p className="text-xs text-muted-foreground">Accepted formats: PDF, JPG, PNG</p>
+                  </div>
+                </div>
               </>
             )}
 
@@ -795,6 +895,20 @@ const LoanApplication = () => {
                         <p className="text-sm text-destructive">{errors.gender.message}</p>
                       )}
                     </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="aadharId">Aadhar ID</Label>
+                    <Input
+                      id="aadharId"
+                      {...register("aadharId")}
+                      placeholder="1234-5678-9012"
+                      maxLength={14}
+                      className={errors.aadharId ? "border-destructive" : ""}
+                    />
+                    {errors.aadharId && (
+                      <p className="text-sm text-destructive">{errors.aadharId.message}</p>
+                    )}
                   </div>
 
                   <div className="space-y-2">
@@ -873,10 +987,27 @@ const LoanApplication = () => {
                     )}
                   </div>
                 </div>
+
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-foreground">Document Upload</h3>
+                  <p className="text-sm text-muted-foreground">Upload required documents (Admission letter, Fee structure, Academic records)</p>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="documents">Upload Documents</Label>
+                    <Input
+                      id="documents"
+                      type="file"
+                      multiple
+                      accept=".pdf,.jpg,.jpeg,.png"
+                      className="cursor-pointer"
+                    />
+                    <p className="text-xs text-muted-foreground">Accepted formats: PDF, JPG, PNG</p>
+                  </div>
+                </div>
               </>
             )}
 
-            <Button 
+            <Button
               type="submit" 
               className="w-full" 
               size="lg"
