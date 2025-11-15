@@ -64,7 +64,7 @@ const Auth = () => {
       if (roleData?.role === "employee") {
         navigate("/dashboard");
       } else {
-        navigate("/bank-selection");
+        navigate("/start-application");
       }
     }
 
