@@ -18,7 +18,13 @@ const loanSchema = z.object({
   name: z.string().optional(),
   age: z.number().optional(),
   gender: z.string().optional(),
-  aadharId: z.string().optional(),
+  aadharId: z.string()
+    .optional()
+    .refine((val) => {
+      if (!val) return true;
+      const cleaned = val.replace(/\s/g, '');
+      return /^\d{12}$/.test(cleaned);
+    }, { message: "Aadhar number must be exactly 12 digits" }),
   // Home Loan fields
   annualIncome: z.number().optional(),
   loanAmount: z.number().optional(),
