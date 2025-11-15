@@ -93,22 +93,6 @@ const Auth = () => {
     const password = formData.get("password") as string;
     const role = formData.get("role") as string;
 
-    // Check if email already exists
-    const { data: existingUser } = await supabase.auth.signInWithPassword({
-      email,
-      password: "dummy", // This will fail but let us check if user exists
-    });
-
-    if (existingUser) {
-      toast({
-        title: "Registration Failed",
-        description: "An account with this email already exists.",
-        variant: "destructive",
-      });
-      setIsLoading(false);
-      return;
-    }
-
     const { error } = await supabase.auth.signUp({
       email,
       password,
