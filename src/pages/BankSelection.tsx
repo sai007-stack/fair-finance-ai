@@ -15,7 +15,7 @@ const BankSelection = () => {
   const handleBankSelection = (bank: string) => {
     // Store selected bank in localStorage or state management
     localStorage.setItem("selectedBank", bank);
-    navigate("/");
+    navigate("/apply");
   };
 
   return (
