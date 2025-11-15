@@ -11,6 +11,7 @@ import CustomerDashboard from "./pages/CustomerDashboard";
 import ReviewTasks from "./pages/ReviewTasks";
 import Auth from "./pages/Auth";
 import BankSelection from "./pages/BankSelection";
+import StartApplication from "./pages/StartApplication";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -24,6 +25,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/auth" element={<Auth />} />
+          <Route path="/start-application" element={<ProtectedRoute><StartApplication /></ProtectedRoute>} />
           <Route path="/bank-selection" element={<ProtectedRoute><BankSelection /></ProtectedRoute>} />
           <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
           <Route path="/apply" element={<ProtectedRoute><LoanApplication /></ProtectedRoute>} />
