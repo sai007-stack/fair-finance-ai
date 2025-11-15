@@ -93,7 +93,7 @@ const Auth = () => {
     const password = formData.get("password") as string;
     const role = formData.get("role") as string;
 
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -116,14 +116,42 @@ const Auth = () => {
           variant: "destructive",
         });
       }
-    } else {
+      setIsLoading(false);
+      return;
+    }
+
+    // Insert user role into user_roles table
+    if (data.user) {
+      const { error: roleError } = await supabase
+        .from("user_roles")
+        .insert({
+          user_id: data.user.id,
+          role: role as "user" | "employee",
+        });
+
+      if (roleError) {
+        console.error("Error inserting role:", roleError);
+        toast({
+          title: "Registration Failed",
+          description: "Failed to set user role. Please try again.",
+          variant: "destructive",
+        });
+        await supabase.auth.signOut();
+        setIsLoading(false);
+        return;
+      }
+
       toast({
         title: "Registration Successful",
-        description: "You can now login with your credentials.",
+        description: "Welcome! Redirecting...",
       });
-      // Switch to login tab
-      const loginTab = document.querySelector('[value="login"]') as HTMLElement;
-      loginTab?.click();
+
+      // Navigate based on role
+      if (role === "employee") {
+        navigate("/dashboard");
+      } else {
+        navigate("/start-application");
+      }
     }
 
     setIsLoading(false);
