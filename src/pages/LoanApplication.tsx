@@ -8,8 +8,9 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Shield, ArrowLeft, Loader2 } from "lucide-react";
+import { Shield, ArrowLeft, Loader2, Upload } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const loanSchema = z.object({
   loanType: z.string().min(1, "Please select loan type"),
@@ -112,6 +113,7 @@ const LoanApplication = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
 
   const {
     register,
@@ -124,6 +126,35 @@ const LoanApplication = () => {
   });
 
   const selectedLoanType = watch("loanType");
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    setUploadedFiles(files);
+  };
+
+  const uploadDocuments = async (loanId: string): Promise<string[]> => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("User not authenticated");
+
+    const uploadedPaths: string[] = [];
+
+    for (const file of uploadedFiles) {
+      const fileName = `${user.id}/${loanId}/${Date.now()}-${file.name}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('loan-documents')
+        .upload(fileName, file);
+
+      if (uploadError) {
+        console.error("Upload error:", uploadError);
+        throw new Error(`Failed to upload ${file.name}`);
+      }
+
+      uploadedPaths.push(fileName);
+    }
+
+    return uploadedPaths;
+  };
 
   const onSubmit = async (data: LoanFormData) => {
     setIsSubmitting(true);
@@ -222,6 +253,30 @@ const LoanApplication = () => {
       }
 
       const result = await response.json();
+      
+      // Upload documents if any
+      if (uploadedFiles.length > 0 && result.applicationId) {
+        try {
+          const documentPaths = await uploadDocuments(result.applicationId);
+          
+          // Save document metadata to database
+          for (let i = 0; i < documentPaths.length; i++) {
+            await supabase.from('loan_documents').insert({
+              loan_id: result.applicationId,
+              file_name: uploadedFiles[i].name,
+              file_path: documentPaths[i],
+              file_type: uploadedFiles[i].type,
+            });
+          }
+        } catch (uploadError) {
+          console.error("Document upload error:", uploadError);
+          toast({
+            title: "Warning",
+            description: "Application submitted but documents failed to upload.",
+            variant: "destructive",
+          });
+        }
+      }
 
       // Navigate to results page with data
       navigate('/result', { 
@@ -462,14 +517,23 @@ const LoanApplication = () => {
                   
                   <div className="space-y-2">
                     <Label htmlFor="documents">Upload Documents</Label>
-                    <Input
-                      id="documents"
-                      type="file"
-                      multiple
-                      accept=".pdf,.jpg,.jpeg,.png"
-                      className="cursor-pointer"
-                    />
-                    <p className="text-xs text-muted-foreground">Accepted formats: PDF, JPG, PNG</p>
+                    <div className="relative">
+                      <Input
+                        id="documents"
+                        type="file"
+                        multiple
+                        accept=".pdf,.jpg,.jpeg,.png"
+                        onChange={handleFileChange}
+                        className="cursor-pointer"
+                      />
+                      {uploadedFiles.length > 0 && (
+                        <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
+                          <Upload className="h-4 w-4" />
+                          <span>{uploadedFiles.length} file(s) selected</span>
+                        </div>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground">Accepted formats: PDF, JPG, PNG (Max 10MB per file)</p>
                   </div>
                 </div>
               </>
@@ -639,15 +703,24 @@ const LoanApplication = () => {
                   <p className="text-sm text-muted-foreground">Upload required documents (Income proof, ID proof)</p>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="documents">Upload Documents</Label>
-                    <Input
-                      id="documents"
-                      type="file"
-                      multiple
-                      accept=".pdf,.jpg,.jpeg,.png"
-                      className="cursor-pointer"
-                    />
-                    <p className="text-xs text-muted-foreground">Accepted formats: PDF, JPG, PNG</p>
+                    <Label htmlFor="documents-personal">Upload Documents</Label>
+                    <div className="relative">
+                      <Input
+                        id="documents-personal"
+                        type="file"
+                        multiple
+                        accept=".pdf,.jpg,.jpeg,.png"
+                        onChange={handleFileChange}
+                        className="cursor-pointer"
+                      />
+                      {uploadedFiles.length > 0 && (
+                        <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
+                          <Upload className="h-4 w-4" />
+                          <span>{uploadedFiles.length} file(s) selected</span>
+                        </div>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground">Accepted formats: PDF, JPG, PNG (Max 10MB per file)</p>
                   </div>
                 </div>
               </>
@@ -831,15 +904,24 @@ const LoanApplication = () => {
                   <p className="text-sm text-muted-foreground">Upload required documents (Business registration, Financial statements, Tax returns)</p>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="documents">Upload Documents</Label>
-                    <Input
-                      id="documents"
-                      type="file"
-                      multiple
-                      accept=".pdf,.jpg,.jpeg,.png"
-                      className="cursor-pointer"
-                    />
-                    <p className="text-xs text-muted-foreground">Accepted formats: PDF, JPG, PNG</p>
+                    <Label htmlFor="documents-business">Upload Documents</Label>
+                    <div className="relative">
+                      <Input
+                        id="documents-business"
+                        type="file"
+                        multiple
+                        accept=".pdf,.jpg,.jpeg,.png"
+                        onChange={handleFileChange}
+                        className="cursor-pointer"
+                      />
+                      {uploadedFiles.length > 0 && (
+                        <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
+                          <Upload className="h-4 w-4" />
+                          <span>{uploadedFiles.length} file(s) selected</span>
+                        </div>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground">Accepted formats: PDF, JPG, PNG (Max 10MB per file)</p>
                   </div>
                 </div>
               </>
@@ -993,15 +1075,24 @@ const LoanApplication = () => {
                   <p className="text-sm text-muted-foreground">Upload required documents (Admission letter, Fee structure, Academic records)</p>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="documents">Upload Documents</Label>
-                    <Input
-                      id="documents"
-                      type="file"
-                      multiple
-                      accept=".pdf,.jpg,.jpeg,.png"
-                      className="cursor-pointer"
-                    />
-                    <p className="text-xs text-muted-foreground">Accepted formats: PDF, JPG, PNG</p>
+                    <Label htmlFor="documents-education">Upload Documents</Label>
+                    <div className="relative">
+                      <Input
+                        id="documents-education"
+                        type="file"
+                        multiple
+                        accept=".pdf,.jpg,.jpeg,.png"
+                        onChange={handleFileChange}
+                        className="cursor-pointer"
+                      />
+                      {uploadedFiles.length > 0 && (
+                        <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
+                          <Upload className="h-4 w-4" />
+                          <span>{uploadedFiles.length} file(s) selected</span>
+                        </div>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground">Accepted formats: PDF, JPG, PNG (Max 10MB per file)</p>
                   </div>
                 </div>
               </>
