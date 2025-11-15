@@ -174,6 +174,44 @@ export type Database = {
         }
         Relationships: []
       }
+      loan_documents: {
+        Row: {
+          created_at: string
+          extracted_text: string | null
+          file_name: string
+          file_path: string
+          file_type: string
+          id: string
+          loan_id: string
+        }
+        Insert: {
+          created_at?: string
+          extracted_text?: string | null
+          file_name: string
+          file_path: string
+          file_type: string
+          id?: string
+          loan_id: string
+        }
+        Update: {
+          created_at?: string
+          extracted_text?: string | null
+          file_name?: string
+          file_path?: string
+          file_type?: string
+          id?: string
+          loan_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loan_documents_loan_id_fkey"
+            columns: ["loan_id"]
+            isOneToOne: false
+            referencedRelation: "loan_applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           created_at: string
