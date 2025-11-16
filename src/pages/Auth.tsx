@@ -106,7 +106,7 @@ const Auth = () => {
       if (error.message.includes("already registered")) {
         toast({
           title: "Registration Failed",
-          description: "An account with this email already exists.",
+          description: "An account with this email already exists. Please login instead.",
           variant: "destructive",
         });
       } else {
@@ -120,27 +120,7 @@ const Auth = () => {
       return;
     }
 
-    // Insert user role into user_roles table
     if (data.user) {
-      const { error: roleError } = await supabase
-        .from("user_roles")
-        .insert({
-          user_id: data.user.id,
-          role: role as "user" | "employee",
-        });
-
-      if (roleError) {
-        console.error("Error inserting role:", roleError);
-        toast({
-          title: "Registration Failed",
-          description: "Failed to set user role. Please try again.",
-          variant: "destructive",
-        });
-        await supabase.auth.signOut();
-        setIsLoading(false);
-        return;
-      }
-
       toast({
         title: "Registration Successful",
         description: "Welcome! Redirecting...",
