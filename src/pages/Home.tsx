@@ -71,7 +71,7 @@ const Home = () => {
         <div className={`grid ${userRole === 'employee' ? 'md:grid-cols-2' : 'md:grid-cols-1'} gap-6 max-w-4xl mx-auto mb-16`}>
           <Card 
             className="p-8 hover:shadow-lg transition-all duration-300 cursor-pointer group border-2 hover:border-primary/50 bg-gradient-to-br from-card to-card/80"
-            onClick={() => navigate('/apply')}
+            onClick={() => navigate('/start-application')}
           >
             <div className="flex flex-col items-center text-center gap-4">
               <div className="p-4 rounded-full bg-primary/10 group-hover:bg-primary/20 transition-colors">
