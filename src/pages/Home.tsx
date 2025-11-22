@@ -4,10 +4,29 @@ import { useNavigate } from "react-router-dom";
 import { Shield, TrendingUp, Users, ArrowRight, LogOut } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useEffect, useState } from "react";
 
 const Home = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [userRole, setUserRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        const { data: roleData } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", session.user.id)
+          .single();
+        
+        setUserRole(roleData?.role || null);
+      }
+    };
+
+    fetchUserRole();
+  }, []);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -49,7 +68,7 @@ const Home = () => {
         </div>
 
         {/* Action Cards */}
-        <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto mb-16">
+        <div className={`grid ${userRole === 'employee' ? 'md:grid-cols-2' : 'md:grid-cols-1'} gap-6 max-w-4xl mx-auto mb-16`}>
           <Card 
             className="p-8 hover:shadow-lg transition-all duration-300 cursor-pointer group border-2 hover:border-primary/50 bg-gradient-to-br from-card to-card/80"
             onClick={() => navigate('/apply')}
@@ -68,23 +87,25 @@ const Home = () => {
             </div>
           </Card>
 
-          <Card 
-            className="p-8 hover:shadow-lg transition-all duration-300 cursor-pointer group border-2 hover:border-primary/50 bg-gradient-to-br from-card to-card/80"
-            onClick={() => navigate('/dashboard')}
-          >
-            <div className="flex flex-col items-center text-center gap-4">
-              <div className="p-4 rounded-full bg-accent/10 group-hover:bg-accent/20 transition-colors">
-                <Users className="h-8 w-8 text-accent" />
+          {userRole === 'employee' && (
+            <Card 
+              className="p-8 hover:shadow-lg transition-all duration-300 cursor-pointer group border-2 hover:border-primary/50 bg-gradient-to-br from-card to-card/80"
+              onClick={() => navigate('/dashboard')}
+            >
+              <div className="flex flex-col items-center text-center gap-4">
+                <div className="p-4 rounded-full bg-accent/10 group-hover:bg-accent/20 transition-colors">
+                  <Users className="h-8 w-8 text-accent" />
+                </div>
+                <h2 className="text-2xl font-bold text-foreground">Employee Dashboard</h2>
+                <p className="text-muted-foreground">
+                  Monitor fairness analytics and ensure ethical AI decisions
+                </p>
+                <Button variant="secondary" className="mt-2 group-hover:scale-105 transition-transform">
+                  View Dashboard <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
               </div>
-              <h2 className="text-2xl font-bold text-foreground">Employee Dashboard</h2>
-              <p className="text-muted-foreground">
-                Monitor fairness analytics and ensure ethical AI decisions
-              </p>
-              <Button variant="secondary" className="mt-2 group-hover:scale-105 transition-transform">
-                View Dashboard <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </div>
-          </Card>
+            </Card>
+          )}
         </div>
 
         {/* Ethical AI Info Section */}
